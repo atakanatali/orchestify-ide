@@ -207,87 +207,8 @@ export class ChatViewWelcomePart extends Disposable {
 				}
 			}
 
-			// Render suggested prompts for both new user and regular modes
-			if (content.suggestedPrompts && content.suggestedPrompts.length) {
-				const suggestedPromptsContainer = dom.append(this.element, $('.chat-welcome-view-suggested-prompts'));
-				const titleElement = dom.append(suggestedPromptsContainer, $('.chat-welcome-view-suggested-prompts-title'));
-				titleElement.textContent = localize('chatWidget.suggestedActions', 'Suggested Actions');
-
-				for (const prompt of content.suggestedPrompts) {
-					const promptElement = dom.append(suggestedPromptsContainer, $('.chat-welcome-view-suggested-prompt'));
-					// Make the prompt element keyboard accessible
-					promptElement.setAttribute('role', 'button');
-					promptElement.setAttribute('tabindex', '0');
-					const promptAriaLabel = prompt.description
-						? localize('suggestedPromptAriaLabelWithDescription', 'Suggested prompt: {0}, {1}', prompt.label, prompt.description)
-						: localize('suggestedPromptAriaLabel', 'Suggested prompt: {0}', prompt.label);
-					promptElement.setAttribute('aria-label', promptAriaLabel);
-					const titleElement = dom.append(promptElement, $('.chat-welcome-view-suggested-prompt-title'));
-					titleElement.textContent = prompt.label;
-					const tooltip = localize('runPromptTitle', "Suggested prompt: {0}", prompt.prompt);
-					promptElement.title = tooltip;
-					titleElement.title = tooltip;
-					if (prompt.description) {
-						const descriptionElement = dom.append(promptElement, $('.chat-welcome-view-suggested-prompt-description'));
-						descriptionElement.textContent = prompt.description;
-						descriptionElement.title = prompt.description;
-					}
-					const executePrompt = () => {
-						type SuggestedPromptClickEvent = { suggestedPrompt: string };
-
-						type SuggestedPromptClickData = {
-							owner: 'bhavyaus';
-							comment: 'Event used to gain insights into when suggested prompts are clicked.';
-							suggestedPrompt: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The suggested prompt clicked.' };
-						};
-
-						this.telemetryService.publicLog2<SuggestedPromptClickEvent, SuggestedPromptClickData>('chat.clickedSuggestedPrompt', {
-							suggestedPrompt: prompt.prompt,
-						});
-
-						if (!this.chatWidgetService.lastFocusedWidget) {
-							const widgets = this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Chat);
-							if (widgets.length) {
-								widgets[0].setInput(prompt.prompt);
-							}
-						} else {
-							this.chatWidgetService.lastFocusedWidget.setInput(prompt.prompt);
-						}
-					};
-					// Add context menu handler
-					this._register(dom.addDisposableListener(promptElement, dom.EventType.CONTEXT_MENU, (e: MouseEvent) => {
-						e.preventDefault();
-						e.stopImmediatePropagation();
-
-						const actions = this.getPromptContextMenuActions(prompt);
-
-						this.contextMenuService.showContextMenu({
-							getAnchor: () => ({ x: e.clientX, y: e.clientY }),
-							getActions: () => actions,
-						});
-					}));
-					// Add click handler
-					this._register(dom.addDisposableListener(promptElement, dom.EventType.CLICK, executePrompt));
-					// Add keyboard handler
-					this._register(dom.addDisposableListener(promptElement, dom.EventType.KEY_DOWN, (e) => {
-						const event = new StandardKeyboardEvent(e);
-						if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
-							e.preventDefault();
-							e.stopPropagation();
-							executePrompt();
-						}
-						else if (event.equals(KeyCode.F10) && event.shiftKey) {
-							e.preventDefault();
-							e.stopPropagation();
-							const actions = this.getPromptContextMenuActions(prompt);
-							this.contextMenuService.showContextMenu({
-								getAnchor: () => promptElement,
-								getActions: () => actions,
-							});
-						}
-					}));
-				}
-			}
+			// Orchestify: Suggested Actions REMOVED - user request
+			// Entire suggestedPrompts rendering section removed
 
 			// Tips
 			if (content.tips) {

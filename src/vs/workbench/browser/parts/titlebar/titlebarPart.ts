@@ -23,7 +23,7 @@ import { CustomMenubarControl } from './menubarControl.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { IStorageService, StorageScope } from '../../../../platform/storage/common/storage.js';
-import { Parts, IWorkbenchLayoutService, ActivityBarPosition, LayoutSettings, EditorActionsLocation, EditorTabsMode } from '../../../services/layout/browser/layoutService.js';
+import { Parts, IWorkbenchLayoutService, LayoutSettings, EditorActionsLocation, EditorTabsMode } from '../../../services/layout/browser/layoutService.js';
 import { createActionViewItem, fillInActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
 import { Action2, IMenu, IMenuService, MenuId, registerAction2 } from '../../../../platform/actions/common/actions.js';
 import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
@@ -259,6 +259,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 	private centerContent!: HTMLElement;
 	private rightContent!: HTMLElement;
 
+
 	protected readonly customMenubar = this._register(new MutableDisposable<CustomMenubarControl>());
 	protected appIcon: HTMLElement | undefined;
 	private appIconBadge: HTMLElement | undefined;
@@ -483,7 +484,6 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 		// Title
 		this.title = append(this.centerContent, $('div.window-title'));
-		this.createTitle();
 
 		// Create Toolbar Actions
 		if (hasCustomTitlebar(this.configurationService, this.titleBarStyle)) {
@@ -491,6 +491,8 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 			this.createActionToolBar();
 			this.createActionToolBarMenus();
 		}
+
+		this.createTitle();
 
 		// Window Controls Container
 		if (!hasNativeTitlebar(this.configurationService, this.titleBarStyle)) {
@@ -568,42 +570,24 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 		const isShowingTitleInNativeTitlebar = hasNativeTitlebar(this.configurationService, this.titleBarStyle);
 
-		// Text Title
-		if (!this.isCommandCenterVisible) {
-			if (!isShowingTitleInNativeTitlebar) {
-				this.title.textContent = this.windowTitle.value;
-				this.titleDisposables.add(this.windowTitle.onDidChange(() => {
-					this.title.textContent = this.windowTitle.value;
-					if (this.lastLayoutDimensions) {
-						this.updateLayout(this.lastLayoutDimensions); // layout menubar and other renderings in the titlebar
-					}
-				}));
-			} else {
-				reset(this.title);
-			}
-		}
-
-		// Menu Title
-		else {
-			// Check if any registered command center control should be shown
-			let customControlShown = false;
-			for (const registration of CommandCenterControlRegistry.getRegistrations()) {
-				if (this.contextKeyService.getContextKeyValue<boolean>(registration.contextKey)) {
-					const control = registration.create(this.instantiationService);
-					reset(this.title, control.element);
-					this.titleDisposables.add(control);
-					customControlShown = true;
-					break;
+		// Orchestify: Always show Window Title in Center (unless native handles it)
+		if (!isShowingTitleInNativeTitlebar) {
+			const updateTitle = () => {
+				const workspaceName = this.windowTitle.workspaceName || 'Orchestify';
+				const fileName = this.windowTitle.fileName;
+				this.title.textContent = fileName ? `${workspaceName} - ${fileName}` : workspaceName;
+			};
+			updateTitle();
+			this.titleDisposables.add(this.windowTitle.onDidChange(() => {
+				updateTitle();
+				if (this.lastLayoutDimensions) {
+					this.updateLayout(this.lastLayoutDimensions); // layout menubar and other renderings in the titlebar
 				}
-			}
-
-			if (!customControlShown) {
-				// Normal mode - show regular command center
-				const commandCenter = this.instantiationService.createInstance(CommandCenterControl, this.windowTitle, this.hoverDelegate);
-				reset(this.title, commandCenter.element);
-				this.titleDisposables.add(commandCenter);
-			}
+			}));
+		} else {
+			reset(this.title);
 		}
+
 	}
 
 	private actionViewItemProvider(action: IAction, options: IBaseActionViewItemOptions): IActionViewItem | undefined {
@@ -844,8 +828,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 	}
 
 	private get activityActionsEnabled(): boolean {
-		const activityBarPosition = this.configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
-		return !this.isCompact && !this.isAuxiliary && (activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM);
+		return !this.isCompact && !this.isAuxiliary;
 	}
 
 	private get globalActionsEnabled(): boolean {

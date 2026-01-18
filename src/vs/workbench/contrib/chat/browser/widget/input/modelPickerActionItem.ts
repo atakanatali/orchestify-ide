@@ -45,6 +45,34 @@ type ChatModelChangeEvent = {
 };
 
 
+function getModelDetails(modelId: string): string {
+	const lowerId = modelId.toLowerCase();
+	if (lowerId.includes('1.5b') || lowerId.includes('1b')) {
+		return '1B Params • Ultra Low Memory';
+	} else if (lowerId.includes('3b')) {
+		return '3B Params • Low Memory';
+	} else if (lowerId.includes('7b') || lowerId.includes('8b')) {
+		return '7-8B Params • Medium Memory';
+	} else if (lowerId.includes('12b') || lowerId.includes('13b') || lowerId.includes('14b')) {
+		return '12-14B Params • High Memory';
+	} else if (lowerId.includes('32b') || lowerId.includes('34b')) {
+		return '32-34B Params • Very High Memory';
+	} else if (lowerId.includes('70b')) {
+		return '70B Params • Extreme Memory';
+	} else if (lowerId.includes('gpt-4')) {
+		return 'Unknown Params • High Memory';
+	} else if (lowerId.includes('gpt-3.5') || lowerId.includes('turbo')) {
+		return 'Unknown Params • Low Memory';
+	} else if (lowerId.includes('claude-3-opus')) {
+		return 'Unknown Params • High Memory';
+	} else if (lowerId.includes('claude-3-sonnet')) {
+		return 'Unknown Params • Medium Memory';
+	} else if (lowerId.includes('claude-3-haiku')) {
+		return 'Unknown Params • Low Memory';
+	}
+	return 'Unknown Params • Variable Memory';
+}
+
 function modelDelegateToWidgetActionsProvider(delegate: IModelPickerDelegate, telemetryService: ITelemetryService): IActionWidgetDropdownActionProvider {
 	return {
 		getActions: () => {
@@ -70,7 +98,7 @@ function modelDelegateToWidgetActionsProvider(delegate: IModelPickerDelegate, te
 					checked: model.identifier === delegate.getCurrentModel()?.identifier,
 					category: model.metadata.modelPickerCategory || DEFAULT_MODEL_PICKER_CATEGORY,
 					class: undefined,
-					description: model.metadata.detail,
+					description: getModelDetails(model.metadata.id),
 					tooltip: model.metadata.tooltip ?? model.metadata.name,
 					label: model.metadata.name,
 					run: () => {

@@ -532,31 +532,10 @@ export function registerChatActions() {
 		}
 	});
 
-	registerAction2(class NewChatWindowAction extends Action2 {
-		constructor() {
-			super({
-				id: `workbench.action.newChatWindow`,
-				title: localize2('interactiveSession.newChatWindow', "New Chat Window"),
-				f1: true,
-				category: CHAT_CATEGORY,
-				precondition: ChatContextKeys.enabled,
-				menu: [{
-					id: MenuId.ChatTitleBarMenu,
-					group: 'b_new',
-					order: 1
-				}, {
-					id: MenuId.ChatNewMenu,
-					group: '2_new',
-					order: 3
-				}]
-			});
-		}
-
-		async run(accessor: ServicesAccessor) {
-			const widgetService = accessor.get(IChatWidgetService);
-			await widgetService.openSession(ChatEditorInput.getNewEditorUri(), AUX_WINDOW_GROUP, { pinned: true, auxiliary: { compact: true, bounds: { width: 640, height: 640 } } } satisfies IChatEditorOptions);
-		}
-	});
+	// Orchestify: Remove New Chat Window Action
+	// registerAction2(class NewChatWindowAction extends Action2 {
+	// ...
+	// });
 
 	registerAction2(class ClearChatInputHistoryAction extends Action2 {
 		constructor() {
@@ -677,78 +656,46 @@ export function registerChatActions() {
 	});
 
 	const nonEnterpriseCopilotUsers = ContextKeyExpr.and(ChatContextKeys.enabled, ContextKeyExpr.notEquals(`config.${defaultChat.completionsAdvancedSetting}.authProvider`, defaultChat.provider.enterprise.id));
-	registerAction2(class extends Action2 {
-		constructor() {
-			super({
-				id: 'workbench.action.chat.manageSettings',
-				title: localize2('manageChat', "Manage Chat"),
-				category: CHAT_CATEGORY,
-				f1: true,
-				precondition: ContextKeyExpr.and(
-					ContextKeyExpr.or(
-						ChatContextKeys.Entitlement.planFree,
-						ChatContextKeys.Entitlement.planPro,
-						ChatContextKeys.Entitlement.planProPlus
-					),
-					nonEnterpriseCopilotUsers
-				),
-				menu: {
-					id: MenuId.ChatTitleBarMenu,
-					group: 'y_manage',
-					order: 1,
-					when: nonEnterpriseCopilotUsers
-				}
-			});
-		}
+	// Orchestify: Remove Manage Chat Action
+	// registerAction2(class extends Action2 {
+	// 	constructor() {
+	// 		super({
+	// 			id: 'workbench.action.chat.manageSettings',
+	// 			title: localize2('manageChat', "Manage Chat"),
+	// 			category: CHAT_CATEGORY,
+	// 			f1: true,
+	// 			precondition: ContextKeyExpr.and(
+	// 				ContextKeyExpr.or(
+	// 					ChatContextKeys.Entitlement.planFree,
+	// 					ChatContextKeys.Entitlement.planPro,
+	// 					ChatContextKeys.Entitlement.planProPlus
+	// 				),
+	// 				nonEnterpriseCopilotUsers
+	// 			),
+	// 			menu: {
+	// 				id: MenuId.ChatTitleBarMenu,
+	// 				group: 'y_manage',
+	// 				order: 1,
+	// 				when: nonEnterpriseCopilotUsers
+	// 			}
+	// 		});
+	// 	}
 
-		override async run(accessor: ServicesAccessor): Promise<void> {
-			const openerService = accessor.get(IOpenerService);
-			openerService.open(URI.parse(defaultChat.manageSettingsUrl));
-		}
-	});
+	// 	override async run(accessor: ServicesAccessor): Promise<void> {
+	// 		const openerService = accessor.get(IOpenerService);
+	// 		openerService.open(URI.parse(defaultChat.manageSettingsUrl));
+	// 	}
+	// });
 
-	registerAction2(class ShowExtensionsUsingCopilot extends Action2 {
+	// Orchestify: Remove Show Extensions Using Copilot Action
+	// registerAction2(class ShowExtensionsUsingCopilot extends Action2 {
+	// ...
+	// });
 
-		constructor() {
-			super({
-				id: 'workbench.action.chat.showExtensionsUsingCopilot',
-				title: localize2('showCopilotUsageExtensions', "Show Extensions using Copilot"),
-				f1: true,
-				category: EXTENSIONS_CATEGORY,
-				precondition: ChatContextKeys.enabled
-			});
-		}
-
-		override async run(accessor: ServicesAccessor): Promise<void> {
-			const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
-			extensionsWorkbenchService.openSearch(`@contribute:${CopilotUsageExtensionFeatureId}`);
-		}
-	});
-
-	registerAction2(class ConfigureCopilotCompletions extends Action2 {
-
-		constructor() {
-			super({
-				id: 'workbench.action.chat.configureCodeCompletions',
-				title: localize2('configureCompletions', "Configure Inline Suggestions..."),
-				precondition: ContextKeyExpr.and(
-					ChatContextKeys.Setup.installed,
-					ChatContextKeys.Setup.disabled.negate(),
-					ChatContextKeys.Setup.untrusted.negate()
-				),
-				menu: {
-					id: MenuId.ChatTitleBarMenu,
-					group: 'f_completions',
-					order: 10,
-				}
-			});
-		}
-
-		override async run(accessor: ServicesAccessor): Promise<void> {
-			const commandService = accessor.get(ICommandService);
-			commandService.executeCommand(defaultChat.completionsMenuCommand);
-		}
-	});
+	// Orchestify: Remove Configure Copilot Completions Action
+	// registerAction2(class ConfigureCopilotCompletions extends Action2 {
+	// ...
+	// });
 
 	registerAction2(class ShowQuotaExceededDialogAction extends Action2 {
 
@@ -879,43 +826,20 @@ Update \`.github/copilot-instructions.md\` for the user, then ask for feedback o
 		}
 	});
 
-	registerAction2(class OpenChatFeatureSettingsAction extends Action2 {
-		constructor() {
-			super({
-				id: 'workbench.action.chat.openFeatureSettings',
-				title: localize2('openChatFeatureSettings', "Chat Settings"),
-				shortTitle: localize('openChatFeatureSettings.short', "Chat Settings"),
-				category: CHAT_CATEGORY,
-				f1: true,
-				precondition: ChatContextKeys.enabled,
-				menu: [{
-					id: CHAT_CONFIG_MENU_ID,
-					when: ContextKeyExpr.and(ChatContextKeys.enabled, ContextKeyExpr.equals('view', ChatViewId)),
-					order: 15,
-					group: '3_configure'
-				},
-				{
-					id: MenuId.ChatWelcomeContext,
-					group: '2_settings',
-					order: 1
-				}]
-			});
-		}
+	// Orchestify: Remove Chat Settings Action
+	// registerAction2(class OpenChatFeatureSettingsAction extends Action2 {
+	// ... (removed)
+	// });
 
-		override async run(accessor: ServicesAccessor): Promise<void> {
-			const preferencesService = accessor.get(IPreferencesService);
-			preferencesService.openSettings({ query: '@feature:chat ' });
-		}
-	});
-
-	MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
-		submenu: CHAT_CONFIG_MENU_ID,
-		title: localize2('config.label', "Configure Chat"),
-		group: 'navigation',
-		when: ContextKeyExpr.equals('view', ChatViewId),
-		icon: Codicon.gear,
-		order: 6
-	});
+	// Orchestify: Remove Configure Chat submenu from ViewTitle
+	// MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
+	// 	submenu: CHAT_CONFIG_MENU_ID,
+	// 	title: localize2('config.label', "Configure Chat"),
+	// 	group: 'navigation',
+	// 	when: ContextKeyExpr.equals('view', ChatViewId),
+	// 	icon: Codicon.gear,
+	// 	order: 6
+	// });
 }
 
 export function stringifyItem(item: IChatRequestViewModel | IChatResponseViewModel, includeName = true): string {
@@ -937,24 +861,24 @@ const defaultChat = {
 };
 
 // Add next to the command center if command center is disabled
-MenuRegistry.appendMenuItem(MenuId.CommandCenter, {
-	submenu: MenuId.ChatTitleBarMenu,
-	title: localize('title4', "Chat"),
-	icon: Codicon.chatSparkle,
-	when: ContextKeyExpr.and(
-		ChatContextKeys.supported,
-		ContextKeyExpr.and(
-			ChatContextKeys.Setup.hidden.negate(),
-			ChatContextKeys.Setup.disabled.negate()
-		),
-		ContextKeyExpr.has('config.chat.commandCenter.enabled'),
-		ContextKeyExpr.or(
-			ContextKeyExpr.has(`config.${ChatConfiguration.AgentStatusEnabled}`).negate(), // Show when agent status is disabled
-			ChatContextKeys.agentStatusHasNotifications.negate() // Or when agent status has no notifications
-		)
-	),
-	order: 10003 // to the right of agent controls
-});
+// MenuRegistry.appendMenuItem(MenuId.CommandCenter, {
+// 	submenu: MenuId.ChatTitleBarMenu,
+// 	title: localize('title4', "Chat"),
+// 	icon: Codicon.chatSparkle,
+// 	when: ContextKeyExpr.and(
+// 		ChatContextKeys.supported,
+// 		ContextKeyExpr.and(
+// 			ChatContextKeys.Setup.hidden.negate(),
+// 			ChatContextKeys.Setup.disabled.negate()
+// 		),
+// 		ContextKeyExpr.has('config.chat.commandCenter.enabled'),
+// 		ContextKeyExpr.or(
+// 			ContextKeyExpr.has(`config.${ChatConfiguration.AgentStatusEnabled}`).negate(), // Show when agent status is disabled
+// 			ChatContextKeys.agentStatusHasNotifications.negate() // Or when agent status has no notifications
+// 		)
+// 	),
+// 	order: 10003 // to the right of agent controls
+// });
 
 // Add to the global title bar if command center is disabled
 MenuRegistry.appendMenuItem(MenuId.TitleBar, {

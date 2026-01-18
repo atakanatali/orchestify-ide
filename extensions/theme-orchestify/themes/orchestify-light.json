@@ -1,0 +1,74 @@
+{
+    "name": "Orchestify Light",
+    "type": "light",
+    "semanticHighlighting": true,
+    "colors": {
+        "editor.background": "#FFFFFF",
+        "editor.foreground": "#000000",
+        "editorCursor.foreground": "#FF8C00",
+        "editor.lineHighlightBackground": "#F0F0F0",
+        "editor.selectionBackground": "#FF8C0040",
+        "activityBar.background": "#F3F3F3",
+        "activityBar.foreground": "#FF8C00",
+        "activityBar.activeBorder": "#FF8C00",
+        "activityBarBadge.background": "#FF8C00",
+        "activityBarBadge.foreground": "#FFFFFF",
+        "sideBar.background": "#F3F3F3",
+        "sideBar.foreground": "#000000",
+        "sideBarTitle.foreground": "#FF8C00",
+        "sideBarSectionHeader.background": "#E0E0E0",
+        "sideBarSectionHeader.foreground": "#FF8C00",
+        "statusBar.background": "#FF8C00",
+        "statusBar.foreground": "#FFFFFF",
+        "statusBar.debuggingBackground": "#FF8C00",
+        "statusBarItem.remoteBackground": "#FF8C00",
+        "statusBarItem.remoteForeground": "#FFFFFF",
+        "tab.activeBackground": "#FFFFFF",
+        "tab.activeForeground": "#FF8C00",
+        "tab.activeBorderTop": "#FF8C00",
+        "tab.inactiveBackground": "#ECECEC",
+        "terminal.ansiCyan": "#FF8C00",
+        "button.background": "#FF8C00",
+        "button.foreground": "#FFFFFF",
+        "button.hoverBackground": "#FFA500",
+        "input.activeBorder": "#FF8C00",
+        "focusBorder": "#FF8C00",
+        "progressBar.background": "#FF8C00",
+        "badge.background": "#FF8C00",
+        "badge.foreground": "#FFFFFF",
+        "list.activeSelectionBackground": "#FF8C0040",
+        "list.activeSelectionForeground": "#000000",
+        "list.highlightForeground": "#FF8C00",
+        "textLink.foreground": "#FF8C00",
+        "textLink.activeForeground": "#FFA500"
+    },
+    "tokenColors": [
+        {
+            "scope": [
+                "keyword",
+                "storage.type",
+                "storage.modifier"
+            ],
+            "settings": {
+                "foreground": "#FF8C00"
+            }
+        },
+        {
+            "scope": [
+                "string"
+            ],
+            "settings": {
+                "foreground": "#A31515"
+            }
+        },
+        {
+            "scope": [
+                "variable",
+                "variable.other"
+            ],
+            "settings": {
+                "foreground": "#E36C09"
+            }
+        }
+    ]
+}

@@ -53,7 +53,8 @@ import { registerPromptActions } from '../promptSyntax/promptFileActions.js';
 import { CHAT_CATEGORY } from './chatActions.js';
 
 export function registerChatContextActions() {
-	registerAction2(AttachContextAction);
+	// Orchestify: Removed Add Context button
+	// registerAction2(AttachContextAction);
 	registerAction2(AttachFileToChatAction);
 	registerAction2(AttachFolderToChatAction);
 	registerAction2(AttachSelectionToChatAction);
@@ -395,8 +396,8 @@ export class AttachContextAction extends Action2 {
 	constructor() {
 		super({
 			id: 'workbench.action.chat.attachContext',
-			title: localize2('workbench.action.chat.attachContext.label.2', "Add Context..."),
-			icon: Codicon.attach,
+			title: localize2('workbench.action.chat.attachContext.label.2', "+"),
+			icon: Codicon.plus,
 			category: CHAT_CATEGORY,
 			keybinding: {
 				when: ContextKeyExpr.and(ChatContextKeys.inChatInput, ChatContextKeys.location.isEqualTo(ChatAgentLocation.Chat)),

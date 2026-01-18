@@ -138,39 +138,40 @@ MenuRegistry.appendMenuItem(MenuId.AgentSessionsToolbar, {
 
 // --- Sessions Title Toolbar
 
-MenuRegistry.appendMenuItem(MenuId.ChatViewSessionTitleToolbar, {
-	command: {
-		id: ShowAgentSessionsSidebar.ID,
-		title: ShowAgentSessionsSidebar.TITLE,
-		icon: Codicon.layoutSidebarLeftOff,
-	},
-	group: 'navigation',
-	order: 1,
-	when: ContextKeyExpr.and(
-		ContextKeyExpr.or(
-			ChatContextKeys.agentSessionsViewerVisible.negate(),
-			ChatContextKeys.agentSessionsViewerOrientation.isEqualTo(AgentSessionsViewerOrientation.Stacked),
-		),
-		ChatContextKeys.agentSessionsViewerPosition.isEqualTo(AgentSessionsViewerPosition.Left)
-	)
-});
+// Orchestify: Remove Show/Hide Agent Sessions Sidebar from Chat View Toolbar
+// MenuRegistry.appendMenuItem(MenuId.ChatViewSessionTitleToolbar, {
+// 	command: {
+// 		id: ShowAgentSessionsSidebar.ID,
+// 		title: ShowAgentSessionsSidebar.TITLE,
+// 		icon: Codicon.layoutSidebarLeftOff,
+// 	},
+// 	group: 'navigation',
+// 	order: 1,
+// 	when: ContextKeyExpr.and(
+// 		ContextKeyExpr.or(
+// 			ChatContextKeys.agentSessionsViewerVisible.negate(),
+// 			ChatContextKeys.agentSessionsViewerOrientation.isEqualTo(AgentSessionsViewerOrientation.Stacked),
+// 		),
+// 		ChatContextKeys.agentSessionsViewerPosition.isEqualTo(AgentSessionsViewerPosition.Left)
+// 	)
+// });
 
-MenuRegistry.appendMenuItem(MenuId.ChatViewSessionTitleToolbar, {
-	command: {
-		id: ShowAgentSessionsSidebar.ID,
-		title: ShowAgentSessionsSidebar.TITLE,
-		icon: Codicon.layoutSidebarRightOff,
-	},
-	group: 'navigation',
-	order: 1,
-	when: ContextKeyExpr.and(
-		ContextKeyExpr.or(
-			ChatContextKeys.agentSessionsViewerVisible.negate(),
-			ChatContextKeys.agentSessionsViewerOrientation.isEqualTo(AgentSessionsViewerOrientation.Stacked),
-		),
-		ChatContextKeys.agentSessionsViewerPosition.isEqualTo(AgentSessionsViewerPosition.Right)
-	)
-});
+// MenuRegistry.appendMenuItem(MenuId.ChatViewSessionTitleToolbar, {
+// 	command: {
+// 		id: ShowAgentSessionsSidebar.ID,
+// 		title: ShowAgentSessionsSidebar.TITLE,
+// 		icon: Codicon.layoutSidebarRightOff,
+// 	},
+// 	group: 'navigation',
+// 	order: 1,
+// 	when: ContextKeyExpr.and(
+// 		ContextKeyExpr.or(
+// 			ChatContextKeys.agentSessionsViewerVisible.negate(),
+// 			ChatContextKeys.agentSessionsViewerOrientation.isEqualTo(AgentSessionsViewerOrientation.Stacked),
+// 		),
+// 		ChatContextKeys.agentSessionsViewerPosition.isEqualTo(AgentSessionsViewerPosition.Right)
+// 	)
+// });
 
 //#endregion
 
@@ -197,14 +198,14 @@ registerSingleton(IAgentSessionsService, AgentSessionsService, InstantiationType
 registerSingleton(IAgentStatusService, AgentStatusService, InstantiationType.Delayed);
 registerSingleton(IAgentSessionProjectionService, AgentSessionProjectionService, InstantiationType.Delayed);
 
-// Register Agent Status as a menu item in the command center (alongside the search box, not replacing it)
-MenuRegistry.appendMenuItem(MenuId.CommandCenter, {
-	submenu: MenuId.AgentsControlMenu,
-	title: localize('agentsControl', "Agents"),
-	icon: Codicon.chatSparkle,
-	when: ContextKeyExpr.has(`config.${ChatConfiguration.AgentStatusEnabled}`),
-	order: 10002 // to the right of the chat button
-});
+// Orchestify: Removed chat button from command center (top bar)
+// MenuRegistry.appendMenuItem(MenuId.CommandCenter, {
+// 	submenu: MenuId.AgentsControlMenu,
+// 	title: localize('agentsControl', "Agents"),
+// 	icon: Codicon.chatSparkle,
+// 	when: ContextKeyExpr.has(`config.${ChatConfiguration.AgentStatusEnabled}`),
+// 	order: 10002 // to the right of the chat button
+// });
 
 // Register a placeholder action to the submenu so it appears (required for submenus)
 MenuRegistry.appendMenuItem(MenuId.AgentsControlMenu, {

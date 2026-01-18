@@ -220,6 +220,10 @@
 	background-color: var(--vscode-statusBarItem-remoteBackground);
 }
 
+.monaco-workbench .part.statusbar > .items-container > .statusbar-item.remote-kind > a {
+	padding: 0 30px;
+}
+
 .monaco-workbench .part.statusbar > .items-container > .statusbar-item.remote-kind a:hover:not(.disabled) {
 	color: var(--vscode-statusBarItem-remoteHoverForeground);
 	background-color: var(--vscode-statusBarItem-remoteHoverBackground) !important;
