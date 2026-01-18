@@ -262,6 +262,8 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	*/
 	private scrollLock = true;
 
+	private _queuedInput: string | undefined;
+
 	private _instructionFilesCheckPromise: Promise<boolean> | undefined;
 	private _instructionFilesExist: boolean | undefined;
 
@@ -910,7 +912,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 					additionalMessage = this._getGenerateInstructionsMessage();
 				}
 				const welcomeContent = this.getWelcomeViewContent(additionalMessage);
-				if (!this.welcomePart.value || this.welcomePart.value.needsRerender(welcomeContent)) {
+				if (!this.welcomePart.value || (this.welcomePart.value as any).needsRerender(welcomeContent)) {
 					dom.clearNode(this.welcomeMessageContainer);
 
 					this.welcomePart.value = this.instantiationService.createInstance(
@@ -935,7 +937,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		// Start checking for instruction files immediately if not already done
 		if (!this._instructionFilesCheckPromise) {
 			this._instructionFilesCheckPromise = this._checkForAgentInstructionFiles();
-			// Use VS Code's idiomatic pattern for disposal-safe promise callbacks
+			// Use Orchestify's idiomatic pattern for disposal-safe promise callbacks
 			this._register(thenIfNotDisposed(this._instructionFilesCheckPromise, hasFiles => {
 				this._instructionFilesExist = hasFiles;
 				// Only re-render if the current view still doesn't have items and we're showing the welcome message
@@ -955,7 +957,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			const generateInstructionsCommand = 'workbench.action.chat.generateInstructions';
 			return new MarkdownString(localize(
 				'chatWidget.instructions',
-				"[Generate Agent Instructions]({0}) to onboard AI onto your codebase.",
+				"[Generate Orchestify Instructions]({0}) to onboard AI onto your codebase.",
 				`command:${generateInstructionsCommand}`
 			), { isTrusted: { enabledCommands: [generateInstructionsCommand] } });
 		}
@@ -1032,137 +1034,143 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	private getPromptFileSuggestions(): IChatSuggestedPrompts[] {
-
-		// Use predefined suggestions for new users
-		if (!this.chatEntitlementService.sentiment.installed) {
-			const isEmpty = this.contextService.getWorkbenchState() === WorkbenchState.EMPTY;
-			if (isEmpty) {
-				return [
-					{
-						icon: Codicon.vscode,
-						label: localize('chatWidget.suggestedPrompts.gettingStarted', "Ask @vscode"),
-						prompt: localize('chatWidget.suggestedPrompts.gettingStartedPrompt', "@vscode How do I change the theme to light mode?"),
-					},
-					{
-						icon: Codicon.newFolder,
-						label: localize('chatWidget.suggestedPrompts.newProject', "Create Project"),
-						prompt: localize('chatWidget.suggestedPrompts.newProjectPrompt', "Create a #new Hello World project in TypeScript"),
-					}
-				];
-			} else {
-				return [
-					{
-						icon: Codicon.debugAlt,
-						label: localize('chatWidget.suggestedPrompts.buildWorkspace', "Build Workspace"),
-						prompt: localize('chatWidget.suggestedPrompts.buildWorkspacePrompt', "How do I build this workspace?"),
-					},
-					{
-						icon: Codicon.gear,
-						label: localize('chatWidget.suggestedPrompts.findConfig', "Show Config"),
-						prompt: localize('chatWidget.suggestedPrompts.findConfigPrompt', "Where is the configuration for this project defined?"),
-					}
-				];
-			}
-		}
-
-		// Get the current workspace folder context if available
-		const activeEditor = this.editorService.activeEditor;
-		const resource = activeEditor ? EditorResourceAccessor.getOriginalUri(activeEditor) : undefined;
-
-		// Get the prompt file suggestions configuration
-		const suggestions = PromptsConfig.getPromptFilesRecommendationsValue(this.configurationService, resource);
-		if (!suggestions) {
-			return [];
-		}
-
-		const result: IChatSuggestedPrompts[] = [];
-		const promptsToLoad: string[] = [];
-
-		// First, collect all prompts that need loading (regardless of shouldInclude)
-		for (const [promptName] of Object.entries(suggestions)) {
-			const description = this.promptDescriptionsCache.get(promptName);
-			if (description === undefined) {
-				promptsToLoad.push(promptName);
-			}
-		}
-
-		// If we have prompts to load, load them asynchronously and don't return anything yet
-		// But only if we're not already loading to prevent infinite loop
-		if (promptsToLoad.length > 0 && !this._isLoadingPromptDescriptions) {
-			this.loadPromptDescriptions(promptsToLoad);
-			return [];
-		}
-
-		// Now process the suggestions with loaded descriptions
-		const promptsWithScores: { promptName: string; condition: boolean | string; score: number }[] = [];
-
-		for (const [promptName, condition] of Object.entries(suggestions)) {
-			let score = 0;
-
-			// Handle boolean conditions
-			if (typeof condition === 'boolean') {
-				score = condition ? 1 : 0;
-			}
-			// Handle when clause conditions
-			else if (typeof condition === 'string') {
-				try {
-					const whenClause = ContextKeyExpr.deserialize(condition);
-					if (whenClause) {
-						// Test against all open code editors
-						const allEditors = this.codeEditorService.listCodeEditors();
-
-						if (allEditors.length > 0) {
-							// Count how many editors match the when clause
-							score = allEditors.reduce((count, editor) => {
-								try {
-									const editorContext = this.contextKeyService.getContext(editor.getDomNode());
-									return count + (whenClause.evaluate(editorContext) ? 1 : 0);
-								} catch (error) {
-									// Log error for this specific editor but continue with others
-									this.logService.warn('Failed to evaluate when clause for editor:', error);
-									return count;
-								}
-							}, 0);
-						} else {
-							// Fallback to global context if no editors are open
-							score = this.contextKeyService.contextMatchesRules(whenClause) ? 1 : 0;
-						}
-					} else {
-						score = 0;
-					}
-				} catch (error) {
-					// Log the error but don't fail completely
-					this.logService.warn('Failed to parse when clause for prompt file suggestion:', condition, error);
-					score = 0;
-				}
-			}
-
-			if (score > 0) {
-				promptsWithScores.push({ promptName, condition, score });
-			}
-		}
-
-		// Sort by score (descending) and take top 5
-		promptsWithScores.sort((a, b) => b.score - a.score);
-		const topPrompts = promptsWithScores.slice(0, 5);
-
-		// Build the final result array
-		for (const { promptName } of topPrompts) {
-			const description = this.promptDescriptionsCache.get(promptName);
-			const commandLabel = localize('chatWidget.promptFile.commandLabel', "{0}", promptName);
-			const uri = this.promptUriCache.get(promptName);
-			const descriptionText = description?.trim() ? description : undefined;
-			result.push({
-				icon: Codicon.run,
-				label: commandLabel,
-				description: descriptionText,
-				prompt: `/${promptName} `,
-				uri: uri
-			});
-		}
-
-		return result;
+		// Orchestify: Disable all suggested prompts
+		return [];
 	}
+
+	/* Orchestify: Original getPromptFileSuggestions code commented out
+	// Use predefined suggestions for new users
+	if (!this.chatEntitlementService.sentiment.installed) {
+		const isEmpty = this.contextService.getWorkbenchState() === WorkbenchState.EMPTY;
+		if (isEmpty) {
+			return [
+				{
+					icon: Codicon.vscode,
+					label: localize('chatWidget.suggestedPrompts.gettingStarted', "Ask @vscode"),
+					prompt: localize('chatWidget.suggestedPrompts.gettingStartedPrompt', "@vscode How do I change the theme to light mode?"),
+				},
+				{
+					icon: Codicon.newFolder,
+					label: localize('chatWidget.suggestedPrompts.newProject', "Create Project"),
+					prompt: localize('chatWidget.suggestedPrompts.newProjectPrompt', "Create a #new Hello World project in TypeScript"),
+				}
+			];
+		} else {
+			return [
+				{
+					icon: Codicon.debugAlt,
+					label: localize('chatWidget.suggestedPrompts.buildWorkspace', "Build Workspace"),
+					prompt: localize('chatWidget.suggestedPrompts.buildWorkspacePrompt', "How do I build this workspace?"),
+				},
+				{
+					icon: Codicon.gear,
+					label: localize('chatWidget.suggestedPrompts.findConfig', "Show Config"),
+					prompt: localize('chatWidget.suggestedPrompts.findConfigPrompt', "Where is the configuration for this project defined?"),
+				}
+			];
+		}
+	}
+
+	// Get the current workspace folder context if available
+	const activeEditor = this.editorService.activeEditor;
+	const resource = activeEditor ? EditorResourceAccessor.getOriginalUri(activeEditor) : undefined;
+
+	// Get the prompt file suggestions configuration
+	const suggestions = PromptsConfig.getPromptFilesRecommendationsValue(this.configurationService, resource);
+	if(!suggestions) {
+		return [];
+	}
+
+	const result: IChatSuggestedPrompts[] = [];
+	const promptsToLoad: string[] = [];
+
+	// First, collect all prompts that need loading (regardless of shouldInclude)
+	for(const [promptName] of Object.entries(suggestions as Record<string, string | boolean>)) {
+	const description = this.promptDescriptionsCache.get(promptName);
+	if (description === undefined) {
+		promptsToLoad.push(promptName);
+	}
+}
+
+// If we have prompts to load, load them asynchronously and don't return anything yet
+// But only if we're not already loading to prevent infinite loop
+if (promptsToLoad.length > 0 && !this._isLoadingPromptDescriptions) {
+	this.loadPromptDescriptions(promptsToLoad);
+	return [];
+}
+
+// Now process the suggestions with loaded descriptions
+const promptsWithScores: { promptName: string; condition: boolean | string; score: number }[] = [];
+
+for (const [promptName, condition] of Object.entries(suggestions as Record<string, string | boolean>)) {
+	let score = 0;
+
+	// Handle boolean conditions
+	if (typeof condition === 'boolean') {
+		score = condition ? 1 : 0;
+	}
+	// Handle when clause conditions
+	else if (typeof condition === 'string') {
+		try {
+			const whenClause = ContextKeyExpr.deserialize(condition as string);
+			if (whenClause) {
+				// Test against all open code editors
+				const allEditors = this.codeEditorService.listCodeEditors();
+
+				if (allEditors.length > 0) {
+					// Count how many editors match the when clause
+					score = allEditors.reduce((count, editor) => {
+						try {
+							const editorContext = this.contextKeyService.getContext(editor.getDomNode());
+							return count + (whenClause!.evaluate(editorContext) ? 1 : 0);
+						} catch (error) {
+							// Log error for this specific editor but continue with others
+							this.logService.warn('Failed to evaluate when clause for editor:', error);
+							return count;
+						}
+					}, 0);
+				} else {
+					// Fallback to global context if no editors are open
+					score = this.contextKeyService.contextMatchesRules(whenClause) ? 1 : 0;
+				}
+			} else {
+				score = 0;
+			}
+		} catch (error) {
+			// Log the error but don't fail completely
+			this.logService.warn('Failed to parse when clause for prompt file suggestion:', condition, error);
+			score = 0;
+		}
+	}
+
+	if (score > 0) {
+		promptsWithScores.push({ promptName, condition, score });
+	}
+}
+
+// Sort by score (descending) and take top 5
+promptsWithScores.sort((a, b) => b.score - a.score);
+const topPrompts = promptsWithScores.slice(0, 5);
+
+// Build the final result array
+for (const { promptName } of topPrompts) {
+	const description = this.promptDescriptionsCache.get(promptName);
+	const commandLabel = localize('chatWidget.promptFile.commandLabel', "{0}", promptName);
+	const uri = this.promptUriCache.get(promptName);
+	const descriptionText = description?.trim() ? description : undefined;
+	result.push({
+		icon: Codicon.run,
+		label: commandLabel,
+		description: descriptionText,
+		prompt: `/${promptName} `,
+		uri: uri
+	});
+}
+
+return result;
+	}
+	*/ // End of commented-out getPromptFileSuggestions
+
 
 	private async loadPromptDescriptions(promptNames: string[]): Promise<void> {
 		// Don't start loading if the widget is being disposed
@@ -2369,9 +2377,21 @@ export class ChatWidget extends Disposable implements IChatWidget {
 				}
 			}
 			this.currentRequest = undefined;
+			if (this._queuedInput) {
+				const query = this._queuedInput;
+				this._queuedInput = undefined;
+				this.acceptInput(query);
+			}
 		});
 
 		return result.responseCreatedPromise;
+	}
+
+	queueCurrentInput(): void {
+		if (this.viewModel?.model.requestInProgress.get()) {
+			this._queuedInput = this.input.inputEditor.getValue();
+			this.input.inputEditor.setValue('');
+		}
 	}
 
 	getModeRequestOptions(): Partial<IChatSendRequestOptions> {

@@ -240,8 +240,12 @@ function isStartupPageEnabled(configurationService: IConfigurationService, conte
 		}
 	}
 
+	// Orchestify: Disable welcome page by default
+	return false;
+	/*
 	return startupEditor.value === 'welcomePage'
 		|| startupEditor.value === 'readme'
 		|| (contextService.getWorkbenchState() === WorkbenchState.EMPTY && startupEditor.value === 'welcomePageInEmptyWorkbench')
 		|| startupEditor.value === 'terminal';
+	*/
 }

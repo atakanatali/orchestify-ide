@@ -431,4 +431,7 @@ import './contrib/editTelemetry/browser/editTelemetry.contribution.js';
 // Opener
 import './contrib/opener/browser/opener.contribution.js';
 
+// Orchestify
+import './contrib/orchestify/browser/orchestify.contribution.js';
+
 //#endregion

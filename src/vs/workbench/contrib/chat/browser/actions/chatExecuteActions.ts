@@ -786,10 +786,69 @@ export class CancelEdit extends Action2 {
 }
 
 
+export class TogglePlanModeAction extends Action2 {
+	static readonly ID = 'workbench.action.chat.togglePlanMode';
+
+	constructor() {
+		super({
+			id: TogglePlanModeAction.ID,
+			title: localize2('interactive.togglePlanMode.label', "Toggle Planning Mode"),
+			category: CHAT_CATEGORY,
+			f1: true,
+			precondition: ChatContextKeys.enabled,
+			icon: Codicon.beaker, // Placeholder icon
+			toggled: ContextKeyExpr.equals('config.chat.planningMode', true),
+			menu: {
+				id: MenuId.ChatInput,
+				group: 'navigation',
+				order: 2, // Next to model picker
+				when: ChatContextKeys.location.isEqualTo(ChatAgentLocation.Chat)
+			}
+		});
+	}
+
+	override async run(accessor: ServicesAccessor): Promise<void> {
+		const configurationService = accessor.get(IConfigurationService);
+		const current = configurationService.getValue<boolean>('chat.planningMode');
+		await configurationService.updateValue('chat.planningMode', !current);
+	}
+}
+
+export class ChatQueueAction extends Action2 {
+	static readonly ID = 'workbench.action.chat.queue';
+
+	constructor() {
+		super({
+			id: ChatQueueAction.ID,
+			title: localize2('chat.queue.label', "Add to Queue"),
+			icon: Codicon.clock,
+			f1: false,
+			menu: {
+				id: MenuId.ChatExecute,
+				when: ChatContextKeys.requestInProgress,
+				group: 'navigation',
+				order: 10
+			}
+		});
+	}
+
+	async run(accessor: ServicesAccessor, ...args: unknown[]) {
+		const context = args[0] as IChatExecuteActionContext | undefined;
+		const widgetService = accessor.get(IChatWidgetService);
+		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
+		if (widget) {
+			(widget as any).queueCurrentInput?.();
+		}
+	}
+}
+
 export function registerChatExecuteActions() {
 	registerAction2(ChatSubmitAction);
+	registerAction2(ChatQueueAction);
 	registerAction2(ChatEditingSessionSubmitAction);
 	registerAction2(SubmitWithoutDispatchingAction);
+	registerAction2(TogglePlanModeAction);
 	registerAction2(CancelAction);
 	registerAction2(SendToNewChatAction);
 	registerAction2(ChatSubmitWithCodebaseAction);
@@ -797,8 +856,10 @@ export function registerChatExecuteActions() {
 	registerAction2(ToggleChatModeAction);
 	registerAction2(SwitchToNextModelAction);
 	registerAction2(OpenModelPickerAction);
-	registerAction2(OpenModePickerAction);
-	registerAction2(OpenSessionTargetPickerAction);
+	// Orchestify: Remove Agent Picker and Session Target Picker
+	// registerAction2(OpenModePickerAction);
+	// registerAction2(OpenSessionTargetPickerAction);
+	// registerAction2(OpenSessionTargetPickerAction);
 	registerAction2(ChatSessionPrimaryPickerAction);
 	registerAction2(ChangeChatModelAction);
 	registerAction2(CancelEdit);

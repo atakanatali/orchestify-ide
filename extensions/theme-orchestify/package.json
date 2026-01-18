@@ -1,0 +1,34 @@
+{
+    "name": "theme-vscode",
+    "displayName": "Orchestify Dark",
+    "description": "The official Orchestify IDE dark theme with burgundy, orange, and cyan accents",
+    "version": "1.0.0",
+    "publisher": "antigravity",
+    "license": "MIT",
+    "engines": {
+        "vscode": "*"
+    },
+    "categories": [
+        "Themes"
+    ],
+    "contributes": {
+        "themes": [
+            {
+                "id": "Orchestify Dark",
+                "label": "Orchestify Dark",
+                "uiTheme": "vs-dark",
+                "path": "./themes/vscode-dark.json"
+            },
+            {
+                "id": "Orchestify Light",
+                "label": "Orchestify Light",
+                "uiTheme": "vs",
+                "path": "./themes/vscode-light.json"
+            }
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/antigravity/vscode.git"
+    }
+}

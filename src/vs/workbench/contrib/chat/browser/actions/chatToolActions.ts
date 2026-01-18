@@ -279,6 +279,7 @@ class ConfigureToolsActionRendering implements IWorkbenchContribution {
 export function registerChatToolActions() {
 	registerAction2(AcceptToolConfirmation);
 	registerAction2(SkipToolConfirmation);
-	registerAction2(ConfigureToolsAction);
+	// Orchestify: Removed tool button from chat
+	// registerAction2(ConfigureToolsAction);
 	registerWorkbenchContribution2(ConfigureToolsActionRendering.ID, ConfigureToolsActionRendering, WorkbenchPhase.BlockRestore);
 }

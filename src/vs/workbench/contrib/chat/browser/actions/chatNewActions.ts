@@ -54,15 +54,17 @@ export interface INewEditSessionActionContext {
 
 export function registerNewChatActions() {
 
-	// Add "New Chat" submenu to Chat view menu
+	// Orchestify: Simplified + button to only create new chat
+	// Removed submenu dropdown
 	MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
-		submenu: MenuId.ChatNewMenu,
-		title: localize2('chat.newEdits.label', "New Chat"),
-		icon: Codicon.plus,
+		command: {
+			id: ACTION_ID_NEW_CHAT,
+			title: localize2('chat.newEdits.label', "New Chat"),
+			icon: Codicon.plus,
+		},
 		when: ContextKeyExpr.equals('view', ChatViewId),
 		group: 'navigation',
 		order: -1,
-		isSplitButton: true
 	});
 
 	registerAction2(class NewChatEditorAction extends Action2 {

@@ -439,8 +439,8 @@ export class BrowserView extends Disposable {
 	}
 
 	/**
-	 * Potentially handle an input event as a VS Code command.
-	 * Returns `true` if the event was forwarded to VS Code and should not be handled natively.
+	 * Potentially handle an input event as a Orchestify command.
+	 * Returns `true` if the event was forwarded to Orchestify and should not be handled natively.
 	 */
 	private tryHandleCommand(input: Electron.Input): boolean {
 		const eventKeyCode = SCAN_CODE_STR_TO_EVENT_KEY_CODE[input.code] || 0;

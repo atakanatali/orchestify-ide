@@ -96,7 +96,7 @@ export class ActivitybarPart extends Part {
 				activeBackgroundColor: undefined, inactiveBackgroundColor: undefined, activeBorderBottomColor: undefined,
 			}),
 			overflowActionSize: ActivitybarPart.ACTION_HEIGHT,
-		}, Parts.ACTIVITYBAR_PART, this.paneCompositePart, true);
+		}, Parts.ACTIVITYBAR_PART, this.paneCompositePart, false);
 	}
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {

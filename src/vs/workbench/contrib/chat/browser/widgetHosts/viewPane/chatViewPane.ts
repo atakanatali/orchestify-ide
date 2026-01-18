@@ -295,9 +295,6 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 
 	private createControls(parent: HTMLElement): void {
 
-		// Sessions Control
-		const sessionsControl = this.createSessionsControl(parent);
-
 		// Welcome Control (used to show chat specific extension provided welcome views via `chatViewsWelcome` contribution point)
 		const welcomeController = this.welcomeController = this._register(this.instantiationService.createInstance(ChatViewWelcomeController, parent, this, ChatAgentLocation.Chat));
 
@@ -305,7 +302,7 @@ export class ChatViewPane extends ViewPane implements IViewWelcomeDelegate {
 		const chatWidget = this.createChatControl(parent);
 
 		// Controls Listeners
-		this.registerControlsListeners(sessionsControl, chatWidget, welcomeController);
+		this.registerControlsListeners(undefined!, chatWidget, welcomeController);
 
 		// Update sessions control visibility when all controls are created
 		this.updateSessionsControlVisibility();

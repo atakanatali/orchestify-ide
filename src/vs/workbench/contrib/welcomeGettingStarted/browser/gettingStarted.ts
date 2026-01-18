@@ -10,14 +10,14 @@ import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js
 import { Button } from '../../../../base/browser/ui/button/button.js';
 import { renderLabelWithIcons } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
 import { DomScrollableElement } from '../../../../base/browser/ui/scrollbar/scrollableElement.js';
-import { Toggle } from '../../../../base/browser/ui/toggle/toggle.js';
+import { Toggle as _Toggle } from '../../../../base/browser/ui/toggle/toggle.js';
 import { coalesce, equals } from '../../../../base/common/arrays.js';
 import { Delayer, Throttler } from '../../../../base/common/async.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { Codicon } from '../../../../base/common/codicons.js';
+import { Codicon as _Codicon } from '../../../../base/common/codicons.js';
 import { onUnexpectedError } from '../../../../base/common/errors.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
-import { splitRecentLabel } from '../../../../base/common/labels.js';
+import { splitRecentLabel as _splitRecentLabel } from '../../../../base/common/labels.js';
 import { DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
 import { ILink, LinkedText } from '../../../../base/common/linkedText.js';
 import { parse } from '../../../../base/common/marshalling.js';
@@ -38,19 +38,19 @@ import { ContextKeyExpr, ContextKeyExpression, IContextKeyService, RawContextKey
 import { IFileService } from '../../../../platform/files/common/files.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { ILabelService, Verbosity } from '../../../../platform/label/common/label.js';
+import { ILabelService, Verbosity as _Verbosity } from '../../../../platform/label/common/label.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { Link } from '../../../../platform/opener/browser/link.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 import { IStorageService, StorageScope, StorageTarget, WillSaveStateReason } from '../../../../platform/storage/common/storage.js';
-import { firstSessionDateStorageKey, ITelemetryService, TelemetryLevel } from '../../../../platform/telemetry/common/telemetry.js';
+import { firstSessionDateStorageKey as _firstSessionDateStorageKey, ITelemetryService, TelemetryLevel } from '../../../../platform/telemetry/common/telemetry.js';
 import { getTelemetryLevel } from '../../../../platform/telemetry/common/telemetryUtils.js';
-import { defaultButtonStyles, defaultKeybindingLabelStyles, defaultToggleStyles } from '../../../../platform/theme/browser/defaultStyles.js';
-import { IWindowOpenable } from '../../../../platform/window/common/window.js';
+import { defaultButtonStyles, defaultKeybindingLabelStyles, defaultToggleStyles as _defaultToggleStyles } from '../../../../platform/theme/browser/defaultStyles.js';
+import { IWindowOpenable as _IWindowOpenable } from '../../../../platform/window/common/window.js';
 import { IWorkspaceContextService, UNKNOWN_EMPTY_WINDOW_WORKSPACE } from '../../../../platform/workspace/common/workspace.js';
-import { IRecentFolder, IRecentWorkspace, IRecentlyOpened, IWorkspacesService, isRecentFolder, isRecentWorkspace } from '../../../../platform/workspaces/common/workspaces.js';
+import { IRecentFolder, IRecentWorkspace, IRecentlyOpened, IWorkspacesService, isRecentFolder as _isRecentFolder, isRecentWorkspace } from '../../../../platform/workspaces/common/workspaces.js';
 import { OpenRecentAction } from '../../../browser/actions/windowActions.js';
 import { OpenFileFolderAction, OpenFolderAction, OpenFolderViaWorkspaceAction } from '../../../browser/actions/workspaceActions.js';
 import { EditorPane } from '../../../browser/parts/editor/editorPane.js';
@@ -75,7 +75,6 @@ import { KeybindingLabel } from '../../../../base/browser/ui/keybindingLabel/key
 import { ScrollbarVisibility } from '../../../../base/common/scrollable.js';
 
 const SLIDE_TRANSITION_TIME_MS = 250;
-const configurationKey = 'workbench.startupEditor';
 
 export const allWalkthroughsHiddenContext = new RawContextKey<boolean>('allWalkthroughsHidden', false);
 export const inWelcomeContext = new RawContextKey<boolean>('inWelcome', false);
@@ -90,7 +89,7 @@ export interface IWelcomePageStartEntry {
 	when: ContextKeyExpression;
 }
 
-const parsedStartEntries: IWelcomePageStartEntry[] = startEntries.map((e, i) => ({
+const _parsedStartEntries: IWelcomePageStartEntry[] = startEntries.map((e, i) => ({
 	command: e.content.command,
 	description: e.description,
 	icon: { type: 'icon', icon: e.icon },
@@ -162,7 +161,7 @@ export class GettingStartedPage extends EditorPane {
 	private detailsRenderer: GettingStartedDetailsRenderer;
 
 	private readonly categoriesSlideDisposables: DisposableStore;
-	private showFeaturedWalkthrough = true;
+	private _showFeaturedWalkthrough = true;
 
 	get editorInput(): GettingStartedInput | undefined {
 		return this._input as GettingStartedInput | undefined;
@@ -188,7 +187,7 @@ export class GettingStartedPage extends EditorPane {
 		@IContextKeyService contextService: IContextKeyService,
 		@IQuickInputService private quickInputService: IQuickInputService,
 		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
-		@ILabelService private readonly labelService: ILabelService,
+		@ILabelService private readonly _labelService: ILabelService,
 		@IHostService private readonly hostService: IHostService,
 		@IWebviewService private readonly webviewService: IWebviewService,
 		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
@@ -890,130 +889,48 @@ export class GettingStartedPage extends EditorPane {
 	private async buildCategoriesSlide(preserveFocus?: boolean) {
 
 		this.categoriesSlideDisposables.clear();
-		const showOnStartupCheckbox = new Toggle({
-			icon: Codicon.check,
-			actionClassName: 'getting-started-checkbox',
-			isChecked: this.configurationService.getValue(configurationKey) === 'welcomePage',
-			title: localize('checkboxTitle', "When checked, this page will be shown on startup."),
-			...defaultToggleStyles
-		});
-		showOnStartupCheckbox.domNode.id = 'showOnStartup';
-		const showOnStartupLabel = $('label.caption', { for: 'showOnStartup' }, localize('welcomePage.showOnStartup', "Show welcome page on startup"));
-		const onShowOnStartupChanged = () => {
-			if (showOnStartupCheckbox.checked) {
-				this.telemetryService.publicLog2<GettingStartedActionEvent, GettingStartedActionClassification>('gettingStarted.ActionExecuted', { command: 'showOnStartupChecked', argument: undefined, walkthroughId: this.currentWalkthrough?.id });
-				this.configurationService.updateValue(configurationKey, 'welcomePage');
-			} else {
-				this.telemetryService.publicLog2<GettingStartedActionEvent, GettingStartedActionClassification>('gettingStarted.ActionExecuted', { command: 'showOnStartupUnchecked', argument: undefined, walkthroughId: this.currentWalkthrough?.id });
-				this.configurationService.updateValue(configurationKey, 'none');
-			}
-		};
-		this.categoriesSlideDisposables.add(showOnStartupCheckbox);
-		this.categoriesSlideDisposables.add(showOnStartupCheckbox.onChange(() => {
-			onShowOnStartupChanged();
-		}));
-		this.categoriesSlideDisposables.add(addDisposableListener(showOnStartupLabel, 'click', () => {
-			showOnStartupCheckbox.checked = !showOnStartupCheckbox.checked;
-			onShowOnStartupChanged();
-		}));
+		// Orchestify: Simple View Implementation
+		// Cleared out complex columns and checkboxes for a minimal branding page.
 
 		const header = $('.header', {},
-			$('h1.product-name.caption', {}, this.productService.nameLong),
-			$('p.subtitle.description', {}, localize({ key: 'gettingStarted.editingEvolved', comment: ['Shown as subtitle on the Welcome page.'] }, "Editing evolved"))
+			$('div.product-logo', {
+				style: 'background-image: url("./media/code-icon.svg"); width: 64px; height: 64px; background-size: contain; background-repeat: no-repeat; margin: 0 auto 20px auto;'
+			}), // Placeholder for logo, using generic code-icon for now or existing css class
+			$('h1.product-name.caption', { style: 'text-align: center; font-size: 3em; margin-bottom: 25px;' }, "Orchestify"),
+			$('p.subtitle.description', { style: 'text-align: center; font-size: 1.5em; opacity: 0.8;' }, localize({ key: 'gettingStarted.editingEvolved', comment: ['Shown as subtitle on the Welcome page.'] }, "Code with Agent (CTRL + C)"))
 		);
 
-		const leftColumn = $('.categories-column.categories-column-left', {},);
-		const rightColumn = $('.categories-column.categories-column-right', {},);
+		// Orchestify: Hide Suggested Actions
+		/*
+		const startList = this.startList = this._register(this._buildRecentlyOpenedList());
+		const startListComponent = startList.getDomNode();
+		*/
 
-		const startList = this.buildStartList();
-		const recentList = this.buildRecentlyOpenedList();
-		const gettingStartedList = this.buildGettingStartedWalkthroughsList();
+		// Container for the simple view
+		const simpleContainer = $('.gettingStartedCategoriesContainer', {
+			style: 'display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;'
+		}, header);
 
-		const footer = $('.footer', {},
-			$('p.showOnStartup', {},
-				showOnStartupCheckbox.domNode,
-				showOnStartupLabel,
-			));
-
-		const layoutLists = () => {
-			if (gettingStartedList.itemCount) {
-				this.container.classList.remove('noWalkthroughs');
-				reset(rightColumn, gettingStartedList.getDomElement());
-			}
-			else {
-				this.container.classList.add('noWalkthroughs');
-				reset(rightColumn);
-			}
-			setTimeout(() => this.categoriesPageScrollbar?.scanDomNode(), 50);
-			layoutRecentList();
-		};
-
-		const layoutRecentList = () => {
-			if (this.container.classList.contains('noWalkthroughs')) {
-				recentList.setLimit(10);
-				reset(leftColumn, startList.getDomElement());
-				reset(rightColumn, recentList.getDomElement());
-			} else {
-				recentList.setLimit(5);
-				reset(leftColumn, startList.getDomElement(), recentList.getDomElement());
-			}
-		};
-
-		gettingStartedList.onDidChange(layoutLists);
-		layoutLists();
-
-		reset(this.categoriesSlide, $('.gettingStartedCategoriesContainer', {}, header, leftColumn, rightColumn, footer,));
+		reset(this.categoriesSlide, simpleContainer);
 		this.categoriesPageScrollbar?.scanDomNode();
 
 		this.updateCategoryProgress();
 		this.registerDispatchListeners();
 
-		const editorInput = this.editorInput;
-		if (editorInput?.selectedCategory) {
-			this.currentWalkthrough = this.gettingStartedCategories.find(category => category.id === editorInput.selectedCategory);
-
-			if (!this.currentWalkthrough) {
-				this.gettingStartedCategories = this.gettingStartedService.getWalkthroughs();
-				this.currentWalkthrough = this.gettingStartedCategories.find(category => category.id === editorInput.selectedCategory);
-				if (this.currentWalkthrough) {
-					this.buildCategorySlide(editorInput.selectedCategory, editorInput.selectedStep, preserveFocus);
-					this.setSlide('details');
-					return;
-				}
-			}
-			else {
-				this.buildCategorySlide(editorInput.selectedCategory, editorInput.selectedStep, preserveFocus);
-				this.setSlide('details');
-				return;
-			}
-		}
-
+		// Orchestify: Simple View - Telemetry Notice
+		// If needed, we can append telemetry notice to the simple container, but skipping for minimal look based on request.
 		if (this.editorInput?.showTelemetryNotice && this.productService.openToWelcomeMainPage) {
-			const telemetryNotice = $('p.telemetry-notice');
-			this.buildTelemetryFooter(telemetryNotice);
-			footer.appendChild(telemetryNotice);
-		} else if (!this.productService.openToWelcomeMainPage && this.showFeaturedWalkthrough && this.storageService.isNew(StorageScope.APPLICATION)) {
-			const firstSessionDateString = this.storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION) || new Date().toUTCString();
-			const daysSinceFirstSession = ((+new Date()) - (+new Date(firstSessionDateString))) / 1000 / 60 / 60 / 24;
-			const fistContentBehaviour = daysSinceFirstSession < 1 ? 'openToFirstCategory' : 'index';
-
-			if (fistContentBehaviour === 'openToFirstCategory') {
-				const first = this.gettingStartedCategories.filter(c => !c.when || this.contextService.contextMatchesRules(c.when))[0];
-				if (first && this.editorInput) {
-					this.currentWalkthrough = first;
-					this.editorInput.selectedCategory = this.currentWalkthrough?.id;
-					this.editorInput.walkthroughPageTitle = this.currentWalkthrough.walkthroughPageTitle;
-					this.buildCategorySlide(this.editorInput.selectedCategory, undefined, preserveFocus);
-					this.setSlide('details', true /* firstLaunch */);
-					return;
-				}
-			}
+			// const telemetryNotice = $('p.telemetry-notice');
+			// this.buildTelemetryFooter(telemetryNotice);
+			// simpleContainer.appendChild(telemetryNotice);
 		}
 
 		this.setSlide('categories');
 	}
 
-	private buildRecentlyOpenedList(): GettingStartedIndexList<RecentEntry> {
+	/*
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private _buildRecentlyOpenedList(): GettingStartedIndexList<RecentEntry> {
 		const renderRecent = (recent: RecentEntry) => {
 			let fullPath: string;
 			let windowOpenable: IWindowOpenable;
@@ -1113,6 +1030,7 @@ export class GettingStartedPage extends EditorPane {
 
 		return recentlyOpenedList;
 	}
+	*/
 
 	private filterRecentlyOpened(workspaces: (IRecentFolder | IRecentWorkspace)[]): RecentEntry[] {
 		return workspaces
@@ -1131,7 +1049,9 @@ export class GettingStartedPage extends EditorPane {
 		}).catch(onUnexpectedError);
 	}
 
-	private buildStartList(): GettingStartedIndexList<IWelcomePageStartEntry> {
+	/*
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private _buildStartList(): GettingStartedIndexList<IWelcomePageStartEntry> {
 		const renderStartEntry = (entry: IWelcomePageStartEntry): HTMLElement =>
 			$('li',
 				{}, $('button.button-link',
@@ -1158,8 +1078,11 @@ export class GettingStartedPage extends EditorPane {
 		startList.onDidChange(() => this.registerDispatchListeners());
 		return startList;
 	}
+	*/
 
-	private buildGettingStartedWalkthroughsList(): GettingStartedIndexList<IResolvedWalkthrough> {
+	/*
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private _buildGettingStartedWalkthroughsList(): GettingStartedIndexList<IResolvedWalkthrough> {
 
 		const renderGetttingStaredWalkthrough = (category: IResolvedWalkthrough): HTMLElement => {
 
@@ -1245,6 +1168,7 @@ export class GettingStartedPage extends EditorPane {
 
 		return gettingStartedList;
 	}
+	*/
 
 	layout(size: Dimension) {
 		this.detailsScrollbar?.scanDomNode();
@@ -1326,7 +1250,7 @@ export class GettingStartedPage extends EditorPane {
 		});
 	}
 
-	private iconWidgetFor(category: IResolvedWalkthrough | { icon: { type: 'icon'; icon: ThemeIcon } }) {
+	private _iconWidgetFor(category: IResolvedWalkthrough | { icon: { type: 'icon'; icon: ThemeIcon } }) {
 		const widget = category.icon.type === 'icon' ? $(ThemeIcon.asCSSSelector(category.icon.icon)) : $('img.category-icon', { src: category.icon.path });
 		widget.classList.add('icon-widget');
 		return widget;
@@ -1571,15 +1495,16 @@ export class GettingStartedPage extends EditorPane {
 						container,
 					);
 
-					if (step.media.type === 'image') {
-						stepDescription.appendChild(
-							$('.image-description', { 'aria-label': localize('imageShowing', "Image showing {0}", step.media.altText) }),
-						);
-					} else if (step.media.type === 'video') {
-						stepDescription.appendChild(
-							$('.video-description', { 'aria-label': localize('videoShowing', "Video showing {0}", step.media.altText) }),
-						);
-					}
+					// Orchestify: Hide image/video descriptions from walkthrough steps
+					// if (step.media.type === 'image') {
+					// 	stepDescription.appendChild(
+					// 		$('.image-description', { 'aria-label': localize('imageShowing', "Image showing {0}", step.media.altText) }),
+					// 	);
+					// } else if (step.media.type === 'video') {
+					// 	stepDescription.appendChild(
+					// 		$('.video-description', { 'aria-label': localize('videoShowing', "Video showing {0}", step.media.altText) }),
+					// 	);
+					// }
 
 					return $('button.getting-started-step',
 						{
@@ -1649,7 +1574,7 @@ export class GettingStartedPage extends EditorPane {
 		parent.append(renderedContents.element);
 	}
 
-	private getKeybindingLabel(command: string) {
+	private _getKeybindingLabel(command: string) {
 		command = command.replace(/^command:/, '');
 		const label = this.keybindingService.lookupKeybinding(command)?.getLabel();
 		if (!label) { return ''; }

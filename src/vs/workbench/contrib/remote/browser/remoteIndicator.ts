@@ -564,7 +564,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
 
 		const properties: IStatusbarEntry = {
 			name: nls.localize('remoteHost', "Remote Host"),
-			kind: this.networkState === 'offline' ? 'offline' : text !== RemoteStatusIndicator.DEFAULT_REMOTE_STATUS_LABEL ? 'remote' : undefined, // only emphasize when applicable
+			kind: this.networkState === 'offline' ? 'offline' : 'remote', // Orchestify: Always emphasize with theme color
 			ariaLabel,
 			text,
 			showProgress,

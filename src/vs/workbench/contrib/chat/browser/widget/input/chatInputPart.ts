@@ -9,11 +9,12 @@ import { DEFAULT_FONT_FAMILY } from '../../../../../../base/browser/fonts.js';
 import { IHistoryNavigationWidget } from '../../../../../../base/browser/history.js';
 import { hasModifierKeys, StandardKeyboardEvent } from '../../../../../../base/browser/keyboardEvent.js';
 import { ActionViewItem, IActionViewItemOptions } from '../../../../../../base/browser/ui/actionbar/actionViewItems.js';
+import { ICommandService } from '../../../../../../platform/commands/common/commands.js';
 import * as aria from '../../../../../../base/browser/ui/aria/aria.js';
 import { Button, ButtonWithIcon } from '../../../../../../base/browser/ui/button/button.js';
 import { createInstantHoverDelegate, getDefaultHoverDelegate } from '../../../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 import { renderLabelWithIcons } from '../../../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { IAction } from '../../../../../../base/common/actions.js';
+import { Action, IAction } from '../../../../../../base/common/actions.js';
 import { equals as arraysEqual } from '../../../../../../base/common/arrays.js';
 import { DeferredPromise, RunOnceScheduler } from '../../../../../../base/common/async.js';
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
@@ -31,6 +32,7 @@ import { isMacintosh } from '../../../../../../base/common/platform.js';
 import { isEqual } from '../../../../../../base/common/resources.js';
 import { ScrollbarVisibility } from '../../../../../../base/common/scrollable.js';
 import { assertType } from '../../../../../../base/common/types.js';
+import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { IEditorConstructionOptions } from '../../../../../../editor/browser/config/editorConfiguration.js';
 import { EditorExtensionsRegistry } from '../../../../../../editor/browser/editorExtensions.js';
@@ -68,6 +70,7 @@ import { ObservableMemento, observableMemento } from '../../../../../../platform
 import { bindContextKey } from '../../../../../../platform/observable/common/platformObservableUtils.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../../../platform/storage/common/storage.js';
 import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
+import { defaultButtonStyles } from '../../../../../../platform/theme/browser/defaultStyles.js';
 import { ISharedWebContentExtractorService } from '../../../../../../platform/webContentExtractor/common/webContentExtractor.js';
 import { ResourceLabels } from '../../../../../browser/labels.js';
 import { IWorkbenchAssignmentService } from '../../../../../services/assignment/common/assignmentService.js';
@@ -122,7 +125,7 @@ import { mixin } from '../../../../../../base/common/objects.js';
 
 const $ = dom.$;
 
-const INPUT_EDITOR_MAX_HEIGHT = 250;
+const INPUT_EDITOR_MAX_HEIGHT = 500;
 const CachedLanguageModelsKey = 'chat.cachedLanguageModels.v2';
 
 export interface IChatInputStyles {
@@ -315,10 +318,12 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 	private readonly _syncTextDebounced: RunOnceScheduler;
 
 	private executeToolbar!: MenuWorkbenchToolBar;
+
 	private inputActionsToolbar!: MenuWorkbenchToolBar;
 
-	private addFilesToolbar: MenuWorkbenchToolBar | undefined;
+	private newChatButton: Button | undefined;
 	private addFilesButton: AddFilesButton | undefined;
+	private attachLeftContainer: HTMLElement | undefined;
 
 	get inputEditor() {
 		return this._inputEditor;
@@ -482,6 +487,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		@IChatSessionsService private readonly chatSessionsService: IChatSessionsService,
 		@IChatContextService private readonly chatContextService: IChatContextService,
 		@IAgentSessionsService private readonly agentSessionsService: IAgentSessionsService,
+		@ICommandService private readonly commandService: ICommandService,
 	) {
 		super();
 
@@ -1013,7 +1019,9 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 	private setCurrentLanguageModelToDefault() {
 		const allModels = this.getModels();
-		const defaultModel = allModels.find(m => m.metadata.isDefaultForLocation[this.location]) || allModels.find(m => m.metadata.isUserSelectable);
+		// Orchestify: Prioritize local/ollama models
+		const localModel = allModels.find(m => m.metadata.vendor === 'ollama' || m.metadata.id.includes('ollama') || m.metadata.id.includes('local'));
+		const defaultModel = localModel || allModels.find(m => m.metadata.isDefaultForLocation[this.location]) || allModels.find(m => m.metadata.isUserSelectable);
 		if (defaultModel) {
 			this.setCurrentLanguageModel(defaultModel);
 		}
@@ -1645,7 +1653,10 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 					dom.h('.chat-editing-session@chatEditingSessionWidgetContainer'),
 					dom.h('.interactive-input-and-side-toolbar@inputAndSideToolbar', [
 						dom.h('.chat-input-container@inputContainer', [
-							dom.h('.chat-editor-container@editorContainer'),
+							dom.h('.chat-input-editor-row', [
+								dom.h('.chat-input-left-toolbar@attachLeftContainer'),
+								dom.h('.chat-editor-container@editorContainer'),
+							]),
 							dom.h('.chat-input-toolbars@inputToolbars'),
 						]),
 					]),
@@ -1659,21 +1670,24 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			]);
 		} else {
 			elements = dom.h('.interactive-input-part', [
-				dom.h('.interactive-input-followups@followupsContainer'),
 				dom.h('.chat-input-widgets-container@chatInputWidgetsContainer'),
 				dom.h('.chat-todo-list-widget-container@chatInputTodoListWidgetContainer'),
 				dom.h('.chat-editing-session@chatEditingSessionWidgetContainer'),
 				dom.h('.interactive-input-and-side-toolbar@inputAndSideToolbar', [
 					dom.h('.chat-input-container@inputContainer', [
+						dom.h('.chat-input-editor-row', [
+							dom.h('.chat-input-left-toolbar@attachLeftContainer'),
+							dom.h('.chat-editor-container@editorContainer'),
+						]),
 						dom.h('.chat-attachments-container@attachmentsContainer', [
 							dom.h('.chat-attachment-toolbar@attachmentToolbar'),
 							dom.h('.chat-related-files@relatedFilesContainer'),
 							dom.h('.chat-attached-context@attachedContextContainer'),
 						]),
-						dom.h('.chat-editor-container@editorContainer'),
 						dom.h('.chat-input-toolbars@inputToolbars'),
 					]),
 				]),
+				dom.h('.interactive-input-followups@followupsContainer'),
 			]);
 		}
 		this.container = elements.root;
@@ -1690,6 +1704,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		const inputAndSideToolbar = elements.inputAndSideToolbar; // The chat input and toolbar to the right
 		const inputContainer = elements.inputContainer; // The chat editor, attachments, and toolbars
 		const editorContainer = elements.editorContainer;
+		this.attachLeftContainer = elements.attachLeftContainer;
 		this.attachmentsContainer = elements.attachmentsContainer;
 		this.attachedContextContainer = elements.attachedContextContainer;
 		this.relatedFilesContainer = elements.relatedFilesContainer;
@@ -1850,7 +1865,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			responsiveBehavior: {
 				enabled: true,
 				kind: 'last',
-				minItems: 1,
+				minItems: 3,
 				actionMinWidth: 40
 			},
 			actionViewItemProvider: (action, options) => {
@@ -1995,27 +2010,16 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			this.renderAttachedContext();
 		}));
 
-		this.addFilesToolbar = this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, attachmentToolbarContainer, MenuId.ChatInputAttachmentToolbar, {
-			telemetrySource: this.options.menus.telemetrySource,
-			label: true,
-			menuOptions: { shouldForwardArgs: true, renderShortTitle: true },
-			hiddenItemStrategy: HiddenItemStrategy.NoHide,
-			hoverDelegate,
-			actionViewItemProvider: (action, options) => {
-				if (action.id === 'workbench.action.chat.attachContext') {
-					const viewItem = this.instantiationService.createInstance(AddFilesButton, this._attachmentModel, action, options);
-					viewItem.setShowLabel(this._attachmentModel.size === 0 && !this.hasImplicitContextBlock());
-					this.addFilesButton = viewItem;
-					return this.addFilesButton;
-				}
-				return undefined;
-			}
-		}));
-		this.addFilesToolbar.context = { widget, placeholder: localize('chatAttachFiles', 'Search for files and context to add to your request') };
-		this._register(this.addFilesToolbar.onDidChangeMenuItems(() => {
-			if (this.cachedDimensions) {
-				this._onDidChangeHeight.fire();
-			}
+		// Orchestify: Initialize AddFilesButton in the left toolbar
+		const attachAction = this._register(new Action('workbench.action.chat.attachContext', localize('chatContext.attach.label', "Add Context"), ThemeIcon.asClassName(Codicon.plus), true, () => this.commandService.executeCommand('workbench.action.chat.attachContext')));
+		this.addFilesButton = this._register(this.instantiationService.createInstance(AddFilesButton, undefined, attachAction, {}));
+		this.addFilesButton.render(this.attachLeftContainer!);
+
+		this.newChatButton = this._register(new Button(attachmentToolbarContainer, { ...defaultButtonStyles }));
+		this.newChatButton.icon = Codicon.plus;
+		this.newChatButton.element.title = localize('newChat', "New Chat");
+		this._register(this.newChatButton.onDidClick(() => {
+			this.commandService.executeCommand('workbench.action.chat.newChat');
 		}));
 		this.renderAttachedContext();
 	}
@@ -2048,7 +2052,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 		const attachments = [...this.attachmentModel.attachments.entries()];
 		const hasAttachments = Boolean(attachments.length) || Boolean(this.implicitContext?.value);
-		dom.setVisibility(Boolean(this.options.renderInputToolbarBelowInput || hasAttachments || (this.addFilesToolbar && !this.addFilesToolbar.isEmpty())), this.attachmentsContainer);
+		dom.setVisibility(Boolean(this.options.renderInputToolbarBelowInput || hasAttachments), this.attachmentsContainer);
 		dom.setVisibility(hasAttachments, this.attachedContextContainer);
 		if (!attachments.length) {
 			this._indexOfLastAttachedContextDeletedWithKeyboard = -1;
@@ -2226,7 +2230,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		}
 
 		// eslint-disable-next-line no-restricted-syntax
-		const toolbar = this.addFilesToolbar?.getElement().querySelector('.action-label');
+		const toolbar = this.newChatButton?.element;
 		if (!toolbar) {
 			return;
 		}
@@ -2811,7 +2815,7 @@ class AddFilesButton extends ActionViewItem {
 		}
 		assertType(this.label);
 		this.label.classList.toggle('has-label', this.showLabel);
-		const message = this.showLabel ? `$(attach) ${this.action.label}` : `$(attach)`;
+		const message = this.showLabel ? `$(plus) ${this.action.label}` : `$(plus)`;
 		dom.reset(this.label, ...renderLabelWithIcons(message));
 	}
 }

@@ -151,26 +151,20 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 							searchIcon.className = action.class ?? '';
 							searchIcon.classList.add('search-icon');
 
-							// label: just workspace name and optional decorations
-							const label = this._getLabel();
-							const labelElement = document.createElement('span');
-							labelElement.classList.add('search-label');
-							labelElement.textContent = label;
-							reset(container, searchIcon, labelElement);
+							// Orchestify: Icon only
+							reset(container, searchIcon);
 
 							const hover = this._store.add(that._hoverService.setupManagedHover(that._hoverDelegate, container, this.getTooltip()));
 
-							// update label & tooltip when window title changes
+							// update tooltip when window title changes
 							this._store.add(that._windowTitle.onDidChange(() => {
 								hover.update(this.getTooltip());
-								labelElement.textContent = this._getLabel();
 							}));
 
 							// update label & tooltip when tabs visibility changes
 							this._store.add(that._editorGroupService.onDidChangeEditorPartOptions(({ newPartOptions, oldPartOptions }) => {
 								if (newPartOptions.showTabs !== oldPartOptions.showTabs) {
 									hover.update(this.getTooltip());
-									labelElement.textContent = this._getLabel();
 								}
 							}));
 						}

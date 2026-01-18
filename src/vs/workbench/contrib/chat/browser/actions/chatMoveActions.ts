@@ -38,12 +38,13 @@ export function registerMoveActions() {
 				category: CHAT_CATEGORY,
 				precondition: ChatContextKeys.enabled,
 				f1: true,
-				menu: {
-					id: MenuId.ViewTitle,
-					when: ContextKeyExpr.equals('view', ChatViewId),
-					order: 0,
-					group: '1_open'
-				},
+				// Orchestify: Remove from View Title menu
+				// menu: {
+				// 	id: MenuId.ViewTitle,
+				// 	when: ContextKeyExpr.equals('view', ChatViewId),
+				// 	order: 0,
+				// 	group: '1_open'
+				// },
 			});
 		}
 
@@ -61,12 +62,13 @@ export function registerMoveActions() {
 				category: CHAT_CATEGORY,
 				precondition: ChatContextKeys.enabled,
 				f1: true,
-				menu: {
-					id: MenuId.ViewTitle,
-					when: ContextKeyExpr.equals('view', ChatViewId),
-					order: 0,
-					group: '1_open'
-				},
+				// Orchestify: Remove from View Title menu
+				// menu: {
+				// 	id: MenuId.ViewTitle,
+				// 	when: ContextKeyExpr.equals('view', ChatViewId),
+				// 	order: 0,
+				// 	group: '1_open'
+				// },
 			});
 		}
 

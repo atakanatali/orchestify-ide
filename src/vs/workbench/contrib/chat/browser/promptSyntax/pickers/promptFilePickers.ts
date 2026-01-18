@@ -86,7 +86,7 @@ function newHelpButton(type: PromptsType): IQuickInputButton & { helpURI: URI } 
 			};
 		case PromptsType.agent:
 			return {
-				tooltip: localize('help.agent', "Show help on custom agent files"),
+				tooltip: localize('help.agent', "Show help on custom Orchestify files"),
 				helpURI: URI.parse(AGENT_DOCUMENTATION_URL),
 				iconClass
 			};
@@ -161,7 +161,7 @@ const UPDATE_INSTRUCTIONS_OPTION: IPromptPickerQuickPickItem = {
 	type: 'item',
 	label: `$(refresh) ${localize(
 		'commands.update-instructions.select-dialog.label',
-		'Generate agent instructions...',
+		'Generate Orchestify instructions...',
 	)}`,
 	pickable: false,
 	alwaysShow: true,
@@ -176,7 +176,7 @@ const NEW_AGENT_FILE_OPTION: IPromptPickerQuickPickItem = {
 	type: 'item',
 	label: `$(plus) ${localize(
 		'commands.new-agentfile.select-dialog.label',
-		'Create new custom agent...',
+		'Create new custom Orchestify...',
 	)}`,
 	pickable: false,
 	alwaysShow: true,

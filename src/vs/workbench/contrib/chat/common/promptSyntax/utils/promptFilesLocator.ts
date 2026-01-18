@@ -81,7 +81,7 @@ export class PromptFilesLocator {
 			}
 		}
 
-		// Also search in the VS Code user data prompts folder (for all types except skills)
+		// Also search in the Orchestify user data prompts folder (for all types except skills)
 		if (type !== PromptsType.skill) {
 			const userDataPromptsHome = this.userDataService.currentProfile.promptsHome;
 			const files = await this.resolveFilesAtLocation(userDataPromptsHome, type, token);
