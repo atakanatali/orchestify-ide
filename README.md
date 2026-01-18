@@ -1,6 +1,6 @@
 # 🦊 Orchestify IDE
 
-**The AI Agent Orchestration IDE** - A VS Code fork designed for managing teams of AI coding agents.
+**The AI Agent Orchestration IDE**
 
 ![Orchestify Logo](resources/linux/orchestify.png)
 
@@ -10,11 +10,11 @@ Orchestify transforms your development workflow by allowing you to orchestrate m
 
 ## Features
 
-- ** Multi-Agent Orchestration** - Run multiple AI agents in parallel with distinct roles
-- ** Real-Time Streaming** - Watch agent thoughts, code changes, and terminal output live
-- ** Conductor Mode** - Pause, edit, and resume agent workflows with your "baton"
-- ** Fox Dashboard** - Visualize active agents and their current tasks
-- ** Local RAG** - Agents understand your entire codebase through intelligent indexing
+- **Multi-Agent Orchestration** - Run multiple AI agents in parallel with distinct roles
+- **Real-Time Streaming** - Watch agent thoughts, code changes, and terminal output live
+- **Conductor Mode** - Pause, edit, and resume agent workflows with your "baton"
+- **Fox Dashboard** - Visualize active agents and their current tasks
+- **Local RAG** - Agents understand your entire codebase through intelligent indexing
 
 ## Quick Start
 
