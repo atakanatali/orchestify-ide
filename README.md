@@ -4,19 +4,19 @@
 
 ![Orchestify Logo](resources/linux/orchestify.png)
 
-## 🎯 Vision
+## Vision
 
 Orchestify transforms your development workflow by allowing you to orchestrate multiple AI "Junior Developer" agents. Like a conductor leading an orchestra, you direct specialized agents to handle frontend, backend, testing, and documentation tasks simultaneously.
 
-## ✨ Features
+## Features
 
-- **🎭 Multi-Agent Orchestration** - Run multiple AI agents in parallel with distinct roles
-- **🔴 Real-Time Streaming** - Watch agent thoughts, code changes, and terminal output live
-- **🎺 Conductor Mode** - Pause, edit, and resume agent workflows with your "baton"
-- **📊 Fox Dashboard** - Visualize active agents and their current tasks
-- **🧠 Local RAG** - Agents understand your entire codebase through intelligent indexing
+- ** Multi-Agent Orchestration** - Run multiple AI agents in parallel with distinct roles
+- ** Real-Time Streaming** - Watch agent thoughts, code changes, and terminal output live
+- ** Conductor Mode** - Pause, edit, and resume agent workflows with your "baton"
+- ** Fox Dashboard** - Visualize active agents and their current tasks
+- ** Local RAG** - Agents understand your entire codebase through intelligent indexing
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+
@@ -40,7 +40,7 @@ npm run watch
 ./scripts/code.sh
 ```
 
-## 🎨 Design Philosophy
+## Design Philosophy
 
 Orchestify features a unique visual identity:
 - **Deep Burgundy** (#2A0A0A) base theme
@@ -48,7 +48,7 @@ Orchestify features a unique visual identity:
 - **Cyan Glow** for active agent states
 - **Glassmorphism** UI components
 
-## 🛠️ Architecture
+## Architecture
 
 ```
 orchestify/
@@ -61,14 +61,10 @@ orchestify/
 └── resources/        # Platform assets & icons
 ```
 
-## 📜 License
+## License
 
 MIT License - See [LICENSE.txt](LICENSE.txt)
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our contribution guidelines for more details.
-
----
-
-**Built with ❤️ by Antigravity**
