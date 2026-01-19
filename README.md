@@ -1,8 +1,10 @@
-# 🦊 Orchestify IDE
+# Orchestify IDE
 
 **The AI Agent Orchestration IDE**
 
-![Orchestify Logo](resources/linux/orchestify.png)
+<p align="center">
+  <img width="456" height="456" alt="Cachify Logo" src="resources/linux/orchestify.png" />
+</p>
 
 ## Vision
 
